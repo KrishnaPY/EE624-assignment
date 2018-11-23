@@ -1,13 +1,12 @@
 import cv2
 import numpy as np
-import scipy.misc as sp
 from matplotlib import pyplot as plt
  
 LEVEL = 256         # Number of reconstruction level in image
 
 """
 Input : Path of the image as a string
-Ouput : Histogram of image as a 2D array with LEVEL number of rows and 1 column. 
+Ouput : Histogram of image(as a 2D array with LEVEL number of rows and 1 column). 
         The value of histogram are scaled to fit into range [0, 1]
 """
 def histogramCalculation (img):
@@ -17,7 +16,6 @@ def histogramCalculation (img):
 
     Hst = np.zeros((LEVEL, 1))
 
-    # 
     inputImg = cv2.imread (img, 0)
 
     (N, M) = inputImg.shape
@@ -34,10 +32,12 @@ def histogramCalculation (img):
 
 givenImage = 'givenhist.jpg'
 spImage = 'sphist.jpg'
+ansImage = 'tranSphist.jpg'
 
 inputEqu = np.zeros((LEVEL, 1))
 outputEqu = np.zeros((LEVEL, 1))
 predictedHst = np.zeros((LEVEL, 1))
+umap = np.zeros((LEVEL, 1))
 
 inputHst = histogramCalculation (givenImage)
 outputHst = histogramCalculation (spImage)
@@ -64,11 +64,32 @@ for i in range (0, LEVEL):
     
     if minz != -1:
         predictedHst[minz][0] += inputHst[i]
+        umap[i][0] = minz
+
 """
-for i in range (0, LEVEL):
-    outputHst[i] = (outputHst[i]*LEVEL)
-    predictedHst[i] = (predictedHst[i]*LEVEL)
+Output image genaration
 """
+N = 0;
+M = 0;
+
+inputImg = cv2.imread (givenImage, 0);  
+(N, M) = inputImg.shape
+
+outputImg = np.zeros((N, M))
+
+for i in range(0, N):
+    for j in range(0, M):
+        pixel = inputImg[i][j]
+        outputImg[i][j] = umap[pixel][0]
+
+plt.gray()
+
+plt.imsave (ansImage, outputImg)
+plt.imshow (outputImg)
+plt.show()
+
+# ***************************** PLOTING HISTOGRAMS *****************************
+
 inputHst = inputHst.ravel ()
 outputHst = outputHst.ravel ()
 predictedHst = predictedHst.ravel ()
@@ -99,13 +120,15 @@ plt.show()
 
 # Transformed histogram Graph
 
+"""
+
 plt.bar (range (0, LEVEL), predictedHst, width, color='blue', label='Transformed')
 plt.xlabel ('Levels')
 plt.ylabel ('Frequency')
 plt.title ('Histrogram')
 plt.legend (loc='upper right')
 plt.show()
-
+"""
 # Bar Graph with Sub-Plot as Output histogram and Transformed histogram
 
 """
